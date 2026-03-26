@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chitrakoot - Details</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo"><img src="image/logo01.png" alt="Logo"></div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="destination.html">Destinations</a></li>
+                <li><a href="booking.html">Book</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="signup.html">Signup</a></li>
+            </ul>
+            <div class="hamburger" onclick="toggleMenu()">☰</div>
+        </nav>
+    </header>
+
+    <main style="padding: 1rem;">
+        <h1>Chitrakoot: Spiritual Hills & Temples</h1>
+        <p>यह पेज Chitrakoot के लिए है जहां आप फोटो और वीडियो जोड़ सकते हैं।</p>
+
+        <section style="margin-top: 2rem;">
+            <h2>Gallery</h2>
+            <div id="gallery" class="grid"></div>
+
+            <h3>Add New Photo</h3>
+            <p>Image URL, Caption डालें और "Add Photo" दबाएँ।</p>
+            <input id="photoUrl" type="url" placeholder="Image URL" style="width: 85%; margin-bottom: .5rem;" />
+            <input id="photoCaption" type="text" placeholder="Caption" style="width: 85%; margin-bottom: .5rem;" />
+            <br>
+            <button onclick="addPhoto()" class="btn">Add Photo</button>
+        </section>
+
+        <section style="margin-top: 2rem;">
+            <h2>Videos</h2>
+            <div id="videos"></div>
+
+            <h3>Add New Video</h3>
+            <p>YouTube URL डालें (embedable) और Caption डालें।</p>
+            <input id="videoUrl" type="url" placeholder="YouTube URL" style="width: 85%; margin-bottom: .5rem;" />
+            <input id="videoCaption" type="text" placeholder="Caption" style="width: 85%; margin-bottom: .5rem;" />
+            <br>
+            <button onclick="addVideo()" class="btn">Add Video</button>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Ayodhya Ramnagri Tourism</p>
+        <p>Office: Ashif Bagh Chauraha, Shree Ayodhya Ji</p>
+        <p>Contact: +91 7607745628</p>
+        <div>
+            <a href="https://wa.me/917607745628" target="_blank" class="btn">WhatsApp</a>
+            <a href="tel:+917607745628" class="btn">Call</a>
+            <a href="https://www.instagram.com/_artourism_" target="_blank" class="btn">Instagram</a>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/917607745628" target="_blank" class="whatsapp-float">💬</a>
+
+    <script src="script.js"></script>
+    <script>
+        const destinationKey = 'destination_chitrakoot';
+
+        function getSavedContent() {
+            const saved = localStorage.getItem(destinationKey);
+            if (!saved) return { photos: [], videos: [] };
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                return { photos: [], videos: [] };
+            }
+        }
+
+        function saveContent(content) {
+            localStorage.setItem(destinationKey, JSON.stringify(content));
+        }
+
+        function renderContent() {
+            const content = getSavedContent();
+            const gallery = document.getElementById('gallery');
+            const videos = document.getElementById('videos');
+
+            gallery.innerHTML = '';
+            videos.innerHTML = '';
+
+            if (content.photos.length === 0) {
+                content.photos = [
+                    { url: 'image/chitrakoot.webp', caption: 'Chitrakoot Hills' }
+                ];
+            }
+
+            content.photos.forEach((photo, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `<img src="${photo.url}" alt="Chitrakoot photo" style="height:160px; object-fit:cover;"><h4>${photo.caption || 'Chitrakoot photo ' + (idx + 1)}</h4>`;
+                gallery.appendChild(card);
+            });
+
+            if (content.videos.length === 0) {
+                content.videos.push({ url: 'https://www.youtube.com/embed/example', caption: 'Chitrakoot documentary' });
+            }
+
+            content.videos.forEach((video, idx) => {
+                const wrapper = document.createElement('div');
+                wrapper.style.marginBottom = '1.25rem';
+                wrapper.innerHTML = `<h4>${video.caption || 'Chitrakoot video ' + (idx + 1)}</h4><iframe width="100%" height="320" src="${formatYoutubeEmbed(video.url)}" frameborder="0" allowfullscreen></iframe>`;
+                videos.appendChild(wrapper);
+            });
+
+            if (content.photos.length === 1 && content.photos[0].url === 'image/chitrakoot.webp' && content.videos.length === 1 && content.videos[0].url === 'https://www.youtube.com/embed/example') {
+                saveContent(content);
+            }
+        }
+
+        function formatYoutubeEmbed(url) {
+            if (url.includes('embed')) return url;
+            let videoId = '';
+            try {
+                const u = new URL(url);
+                if (u.hostname.includes('youtu.be')) {
+                    videoId = u.pathname.slice(1);
+                } else if (u.searchParams.has('v')) {
+                    videoId = u.searchParams.get('v');
+                }
+            } catch (err) {
+                return url;
+            }
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : url;
+        }
+
+        function addPhoto() {
+            const url = document.getElementById('photoUrl').value.trim();
+            const caption = document.getElementById('photoCaption').value.trim();
+            if (!url) return alert('Image URL डालें');
+            const content = getSavedContent();
+            content.photos.unshift({ url, caption });
+            saveContent(content);
+            document.getElementById('photoUrl').value = '';
+            document.getElementById('photoCaption').value = '';
+            renderContent();
+        }
+
+        function addVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const caption = document.getElementById('videoCaption').value.trim();
+            if (!url) return alert('Video URL डालें');
+            const content = getSavedContent();
+            content.videos.unshift({ url: formatYoutubeEmbed(url), caption });
+            saveContent(content);
+            document.getElementById('videoUrl').value = '';
+            document.getElementById('videoCaption').value = '';
+            renderContent();
+        }
+
+        document.addEventListener('DOMContentLoaded', renderContent);
+    </script>
+</body>
+</html>
